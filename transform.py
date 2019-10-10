@@ -1,8 +1,8 @@
 import glob
 import json
-import logging
-import os
+import logging.config
 import multiprocessing as mp
+import os
 import shutil
 import uuid
 from functools import reduce
@@ -10,6 +10,7 @@ from functools import reduce
 import pandas
 from pandas.io.json import json_normalize
 
+logging.config.fileConfig('log.conf', disable_existing_loggers=False)
 log = logging.getLogger(__name__)
 
 
@@ -21,7 +22,7 @@ def transform_json_to_parquet(sources):
 
 
 def process_chunk(relative_files, src):
-    log.error("Starting")
+    log.info("Starting")
     files = map(lambda file: os.path.join(src, file), relative_files)
     for chunked_group in chunk(list(files), 10):
         data_frames = list(map(lambda file: json_normalize(read_json(file)), chunked_group))
@@ -29,7 +30,7 @@ def process_chunk(relative_files, src):
         save_success = create_or_update(merged_data_frame, src)
         if save_success:
             delete_files(src)
-    log.error("Completed")
+    log.info("Completed")
 
 
 def read_json(file):
